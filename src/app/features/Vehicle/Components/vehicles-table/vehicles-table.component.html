@@ -3,6 +3,50 @@
 
 <div class="container mx-auto p-4">
   <h1 class="text-2xl font-bold mb-4">Gestión de Vehículos</h1>
+  
+  <!-- Formulario de Filtros -->
+  <div class="mb-4 p-4 bg-gray-100 rounded shadow-md">
+    <h2 class="text-xl font-bold mb-2">Filtros</h2>
+    <form (ngSubmit)="applyFilters()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-gray-700">Marca</label>
+        <input type="text" [(ngModel)]="filters.brand" name="brand" class="w-full px-3 py-2 border rounded">
+      </div>
+      <div>
+        <label class="block text-gray-700">Modelo</label>
+        <input type="text" [(ngModel)]="filters.model" name="model" class="w-full px-3 py-2 border rounded">
+      </div>
+      <div>
+        <label class="block text-gray-700">Matrícula</label>
+        <input type="text" [(ngModel)]="filters.licensePlate" name="licensePlate" class="w-full px-3 py-2 border rounded">
+      </div>
+      <div>
+        <label class="block text-gray-700">Tipo</label>
+        <select [(ngModel)]="filters.type" name="type" class="w-full px-3 py-2 border rounded">
+          <option value="">Todos</option>
+          <option value="Sedan">Sedan</option>
+          <option value="SUV">SUV</option>
+          <option value="Camioneta">Camioneta</option>
+          <option value="Deportivo">Deportivo</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-gray-700">Estado</label>
+        <select [(ngModel)]="filters.status" name="status" class="w-full px-3 py-2 border rounded">
+          <option value="">Todos</option>
+          <option value="Disponible">Disponible</option>
+          <option value="Mantenimiento">Mantenimiento</option>
+          <option value="Alquilado">Alquilado</option>
+        </select>
+      </div>
+      <div class="flex items-end">
+        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 flex items-center">
+          <i class="fas fa-filter mr-2"></i> Aplicar Filtros
+        </button>
+      </div>
+    </form>
+  </div>
+
   <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4 transition duration-300 flex items-center" (click)="openModal('add')">
     <i class="fas fa-plus mr-2"></i> Agregar Vehículo
   </button>
@@ -23,7 +67,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let vehicle of vehicles" class="hover:bg-gray-100 transition duration-300">
+      <tr *ngFor="let vehicle of filteredVehicles" class="hover:bg-gray-100 transition duration-300">
         <td class="py-2 px-4 border-b">{{ vehicle.vehicleId }}</td>
         <td class="py-2 px-4 border-b">{{ vehicle.brand }}</td>
         <td class="py-2 px-4 border-b">{{ vehicle.model }}</td>

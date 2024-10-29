@@ -5,6 +5,6 @@ import { LoginComponent } from './features/Login/Components/login/login.componen
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
     { path: 'home', component: VehiclesTableComponent },
-    { path: '', redirectTo: '/home', pathMatch: 'full' }, // Redirección a home como ruta principal
-    { path: '**', redirectTo: '/home' } // Redirección a home para rutas no encontradas
+    { path: '', redirectTo: '/login', pathMatch: 'full' }, // Redirección a home como ruta principal
+    { path: '**', redirectTo: '/login' } // Redirección a home para rutas no encontradas
   ];

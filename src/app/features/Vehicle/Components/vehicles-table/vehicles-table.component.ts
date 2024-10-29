@@ -1,3 +1,5 @@
+
+
 import { Component, OnInit } from '@angular/core';
 import { VehicleService } from '../../Services/vehicle.service';
 import { IVehicle } from '../../Models/IVehicle';
@@ -13,12 +15,21 @@ import { FormsModule } from '@angular/forms';
 })
 export class VehiclesTableComponent implements OnInit {
   vehicles: IVehicle[] = [];
+  filteredVehicles: IVehicle[] = [];
   isModalOpen = false;
   isDeleteModalOpen = false;
   modalTitle = '';
   selectedVehicle: IVehicle = {} as IVehicle;
   vehicleToDeleteId: number | null = null;
   today: string = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
+
+  filters = {
+    brand: '',
+    model: '',
+    licensePlate: '',
+    type: '',
+    status: ''
+  };
 
   constructor(private vehicleService: VehicleService) { }
 
@@ -29,6 +40,17 @@ export class VehiclesTableComponent implements OnInit {
   loadVehicles(): void {
     this.vehicleService.getAllVehicles().subscribe((data: IVehicle[]) => {
       this.vehicles = data;
+      this.applyFilters();
+    });
+  }
+
+  applyFilters(): void {
+    this.filteredVehicles = this.vehicles.filter(vehicle => {
+      return (!this.filters.brand || vehicle.brand.toLowerCase().includes(this.filters.brand.toLowerCase())) &&
+             (!this.filters.model || vehicle.model.toLowerCase().includes(this.filters.model.toLowerCase())) &&
+             (!this.filters.licensePlate || vehicle.licensePlate.toLowerCase().includes(this.filters.licensePlate.toLowerCase())) &&
+             (!this.filters.type || vehicle.type === this.filters.type) &&
+             (!this.filters.status || vehicle.status === this.filters.status);
     });
   }
 

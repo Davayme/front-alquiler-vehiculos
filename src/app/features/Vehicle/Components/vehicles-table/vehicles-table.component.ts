@@ -1,6 +1,4 @@
-
-
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { VehicleService } from '../../Services/vehicle.service';
 import { IVehicle } from '../../Models/IVehicle';
 import { CommonModule } from '@angular/common';
@@ -11,7 +9,7 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './vehicles-table.component.html',
-  styleUrls: ['./vehicles-table.component.css']
+  styleUrls: ['./vehicles-table.component.css'],
 })
 export class VehiclesTableComponent implements OnInit {
   vehicles: IVehicle[] = [];
@@ -22,35 +20,53 @@ export class VehiclesTableComponent implements OnInit {
   selectedVehicle: IVehicle = {} as IVehicle;
   vehicleToDeleteId: number | null = null;
   today: string = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
+  errorMessage = '';
 
   filters = {
     brand: '',
     model: '',
     licensePlate: '',
     type: '',
-    status: ''
+    status: '',
   };
 
-  constructor(private vehicleService: VehicleService) { }
+  private readonly vehicleService: VehicleService = inject(VehicleService);
 
   ngOnInit(): void {
     this.loadVehicles();
   }
 
   loadVehicles(): void {
-    this.vehicleService.getAllVehicles().subscribe((data: IVehicle[]) => {
-      this.vehicles = data;
-      this.applyFilters();
+    this.vehicleService.getAllVehicles().subscribe({
+      next: (data: IVehicle[]) => {
+        this.vehicles = data; // Asigna los vehículos recibidos
+        this.applyFilters(); // Aplica filtros si es necesario
+      },
+      error: (error) => {
+        console.error('Error loading vehicles:', error); // Manejo de errores
+        this.errorMessage= 'Failed to load vehicles. Please try again later.'; // Mensaje de error para el usuario
+      },
     });
   }
 
   applyFilters(): void {
-    this.filteredVehicles = this.vehicles.filter(vehicle => {
-      return (!this.filters.brand || vehicle.brand.toLowerCase().includes(this.filters.brand.toLowerCase())) &&
-             (!this.filters.model || vehicle.model.toLowerCase().includes(this.filters.model.toLowerCase())) &&
-             (!this.filters.licensePlate || vehicle.licensePlate.toLowerCase().includes(this.filters.licensePlate.toLowerCase())) &&
-             (!this.filters.type || vehicle.type === this.filters.type) &&
-             (!this.filters.status || vehicle.status === this.filters.status);
+    this.filteredVehicles = this.vehicles.filter((vehicle) => {
+      return (
+        (!this.filters.brand ||
+          vehicle.brand
+            .toLowerCase()
+            .includes(this.filters.brand.toLowerCase())) &&
+        (!this.filters.model ||
+          vehicle.model
+            .toLowerCase()
+            .includes(this.filters.model.toLowerCase())) &&
+        (!this.filters.licensePlate ||
+          vehicle.licensePlate
+            .toLowerCase()
+            .includes(this.filters.licensePlate.toLowerCase())) &&
+        (!this.filters.type || vehicle.type === this.filters.type) &&
+        (!this.filters.status || vehicle.status === this.filters.status)
+      );
     });
   }
 
@@ -71,10 +87,12 @@ export class VehiclesTableComponent implements OnInit {
 
   onSubmit(): void {
     if (this.selectedVehicle.vehicleId) {
-      this.vehicleService.updateVehicle(this.selectedVehicle.vehicleId, this.selectedVehicle).subscribe(() => {
-        this.loadVehicles();
-        this.closeModal();
-      });
+      this.vehicleService
+        .updateVehicle(this.selectedVehicle.vehicleId, this.selectedVehicle)
+        .subscribe(() => {
+          this.loadVehicles();
+          this.closeModal();
+        });
     } else {
       this.vehicleService.createVehicle(this.selectedVehicle).subscribe(() => {
         this.loadVehicles();
@@ -95,15 +113,19 @@ export class VehiclesTableComponent implements OnInit {
 
   confirmDelete(): void {
     if (this.vehicleToDeleteId !== null) {
-      this.vehicleService.deleteVehicle(this.vehicleToDeleteId).subscribe(() => {
-        this.loadVehicles();
-        this.closeDeleteModal();
-      });
+      this.vehicleService
+        .deleteVehicle(this.vehicleToDeleteId)
+        .subscribe(() => {
+          this.loadVehicles();
+          this.closeDeleteModal();
+        });
     }
   }
 
   // Función para validar si la fecha de adquisición es futura
   isFutureDate(): boolean {
-    return new Date(this.selectedVehicle.acquisitionDate) > new Date(this.today);
+    return (
+      new Date(this.selectedVehicle.acquisitionDate) > new Date(this.today)
+    );
   }
 }

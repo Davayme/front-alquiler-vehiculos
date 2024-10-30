@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -10,17 +10,25 @@ import { ILogin } from '../../Models/ILogin';
   standalone: true,
   imports: [FormsModule, CommonModule],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
 })
 export class LoginComponent {
   credentials: ILogin = { email: '', password: '' };
-  registerData = { email: '', firstName: '', lastName: '', password: '', phone: '', roleId: 2 };
+  registerData = {
+    email: '',
+    firstName: '',
+    lastName: '',
+    password: '',
+    phone: '',
+    roleId: 2,
+  };
   forgotPasswordData = { email: '', newPassword: '' };
   isRegisterModalOpen = false;
   isForgotPasswordModalOpen = false;
-  errorMessage: string = '';
+  errorMessage = '';
 
-  constructor(private loginService: LoginService, private router: Router) {}
+  private readonly loginService: LoginService = inject(LoginService);
+  private readonly router: Router = inject(Router);
 
   onSubmit(): void {
     this.loginService.login(this.credentials).subscribe(
@@ -29,7 +37,9 @@ export class LoginComponent {
         this.router.navigate(['/home']);
       },
       (error) => {
-        this.errorMessage = 'Credenciales incorrectas. Inténtalo de nuevo.';
+        this.errorMessage =
+          error?.error?.message ||
+          'Ocurrió un error inesperado. Inténtalo de nuevo.';
       }
     );
   }

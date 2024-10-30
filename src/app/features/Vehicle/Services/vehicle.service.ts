@@ -1,41 +1,46 @@
-import { Injectable } from '@angular/core';
-import axios, { AxiosInstance } from 'axios';
-import { Observable, from } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { IVehicle } from '../Models/IVehicle';
 
 @Injectable({
- providedIn: 'root'
+  providedIn: 'root',
 })
 export class VehicleService {
   private baseUrl = 'http://localhost:8080/vehicles';
-  private axiosClient: AxiosInstance;
+  private headers = new HttpHeaders({
+    'Content-Type': 'application/json',
+  });
 
-  constructor() {
-    this.axiosClient = axios.create({
-      baseURL: this.baseUrl,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+  private readonly httpClient: HttpClient = inject(HttpClient);
+
+  getAllVehicles(): Observable<IVehicle[]> {
+    return this.httpClient.get<IVehicle[]>(this.baseUrl, {
+      headers: this.headers,
     });
   }
 
-  getAllVehicles(): Observable<IVehicle[]> {
-    return from(this.axiosClient.get<IVehicle[]>('').then(response => response.data));
-  }
-
   getVehicleById(id: number): Observable<IVehicle> {
-    return from(this.axiosClient.get<IVehicle>(`${id}`).then(response => response.data));
+    return this.httpClient.get<IVehicle>(`${this.baseUrl}/${id}`, {
+      headers: this.headers,
+    });
   }
 
   createVehicle(vehicle: IVehicle): Observable<IVehicle> {
-    return from(this.axiosClient.post<IVehicle>('', vehicle).then(response => response.data));
+    return this.httpClient.post<IVehicle>(this.baseUrl, vehicle, {
+      headers: this.headers,
+    });
   }
 
   updateVehicle(id: number, vehicle: IVehicle): Observable<IVehicle> {
-    return from(this.axiosClient.put<IVehicle>(`${id}`, vehicle).then(response => response.data));
+    return this.httpClient.put<IVehicle>(`${this.baseUrl}/${id}`, vehicle, {
+      headers: this.headers,
+    });
   }
 
   deleteVehicle(id: number): Observable<void> {
-    return from(this.axiosClient.delete<void>(`${id}`).then(response => response.data));
+    return this.httpClient.delete<void>(`${this.baseUrl}/${id}`, {
+      headers: this.headers,
+    });
   }
 }

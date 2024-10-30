@@ -1,4 +1,3 @@
-// src/app/features/Vehicle/Models/vehicle.model.ts
 export interface IVehicle {
     vehicleId: number;
     brand: string;

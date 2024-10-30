@@ -1,1 +1,353 @@
-<p>vehicles-table works!</p>
+<!-- Agregar Font Awesome para los íconos -->
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+/>
+
+<div class="container mx-auto p-4">
+  <h1 class="text-2xl font-bold mb-4">Gestión de Vehículos</h1>
+
+  <!-- Formulario de Filtros -->
+  <div class="mb-4 p-4 bg-gray-100 rounded shadow-md">
+    <h2 class="text-xl font-bold mb-2">Filtros</h2>
+    <form
+      (ngSubmit)="applyFilters()"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+    >
+      <div>
+        <label class="block text-gray-700">Marca</label>
+        <input
+          type="text"
+          [(ngModel)]="filters.brand"
+          name="brand"
+          class="w-full px-3 py-2 border rounded"
+        />
+      </div>
+      <div>
+        <label class="block text-gray-700">Modelo</label>
+        <input
+          type="text"
+          [(ngModel)]="filters.model"
+          name="model"
+          class="w-full px-3 py-2 border rounded"
+        />
+      </div>
+      <div>
+        <label class="block text-gray-700">Matrícula</label>
+        <input
+          type="text"
+          [(ngModel)]="filters.licensePlate"
+          name="licensePlate"
+          class="w-full px-3 py-2 border rounded"
+        />
+      </div>
+      <div>
+        <label class="block text-gray-700">Tipo</label>
+        <select
+          [(ngModel)]="filters.type"
+          name="type"
+          class="w-full px-3 py-2 border rounded"
+        >
+          <option value="">Todos</option>
+          <option value="Sedan">Sedan</option>
+          <option value="SUV">SUV</option>
+          <option value="Camioneta">Camioneta</option>
+          <option value="Deportivo">Deportivo</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-gray-700">Estado</label>
+        <select
+          [(ngModel)]="filters.status"
+          name="status"
+          class="w-full px-3 py-2 border rounded"
+        >
+          <option value="">Todos</option>
+          <option value="Disponible">Disponible</option>
+          <option value="Mantenimiento">Mantenimiento</option>
+          <option value="Alquilado">Alquilado</option>
+        </select>
+      </div>
+      <div class="flex items-end">
+        <button
+          type="submit"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 flex items-center"
+        >
+          <i class="fas fa-filter mr-2"></i> Aplicar Filtros
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <button
+    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4 transition duration-300 flex items-center"
+    (click)="openModal('add')"
+  >
+    <i class="fas fa-plus mr-2"></i> Agregar Vehículo
+  </button>
+  <table class="min-w-full bg-white border border-gray-200 shadow-lg">
+    <thead>
+      <tr class="bg-gray-100">
+        <th class="py-2 px-4 border-b">ID</th>
+        <th class="py-2 px-4 border-b">Marca</th>
+        <th class="py-2 px-4 border-b">Modelo</th>
+        <th class="py-2 px-4 border-b">Matrícula</th>
+        <th class="py-2 px-4 border-b">Tipo</th>
+        <th class="py-2 px-4 border-b">Estado</th>
+        <th class="py-2 px-4 border-b">Tarifa Diaria</th>
+        <th class="py-2 px-4 border-b">Fecha de Adquisición</th>
+        <th class="py-2 px-4 border-b">Kilometraje</th>
+        <th class="py-2 px-4 border-b">Ubicación</th>
+        <th class="py-2 px-4 border-b">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="let vehicle of filteredVehicles"
+        class="hover:bg-gray-100 transition duration-300"
+      >
+        <td class="py-2 px-4 border-b">{{ vehicle.vehicleId }}</td>
+        <td class="py-2 px-4 border-b">{{ vehicle.brand }}</td>
+        <td class="py-2 px-4 border-b">{{ vehicle.model }}</td>
+        <td class="py-2 px-4 border-b">{{ vehicle.licensePlate }}</td>
+        <td class="py-2 px-4 border-b">{{ vehicle.type }}</td>
+        <td class="py-2 px-4 border-b">{{ vehicle.status }}</td>
+        <td class="py-2 px-4 border-b">{{ vehicle.dailyRate }}</td>
+        <td class="py-2 px-4 border-b">{{ vehicle.acquisitionDate | date }}</td>
+        <td class="py-2 px-4 border-b">{{ vehicle.mileage }}</td>
+        <td class="py-2 px-4 border-b">{{ vehicle.location }}</td>
+        <td class="py-2 px-4 border-b flex space-x-2">
+          <button
+            class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded transition duration-300 flex items-center"
+            (click)="openModal('edit', vehicle)"
+          >
+            <i class="fas fa-edit mr-1"></i> Editar
+          </button>
+          <button
+            class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded transition duration-300 flex items-center"
+            (click)="openDeleteModal(vehicle.vehicleId)"
+          >
+            <i class="fas fa-trash mr-1"></i> Eliminar
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Modal -->
+  <div
+    *ngIf="isModalOpen"
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center"
+  >
+    <div
+      class="bg-white p-6 rounded shadow-lg w-1/2 max-h-full overflow-y-auto"
+    >
+      <h2 class="text-xl font-bold mb-4">{{ modalTitle }}</h2>
+      <form (ngSubmit)="onSubmit()" #vehicleForm="ngForm">
+        <div class="mb-4">
+          <label class="block text-gray-700">Marca</label>
+          <input
+            type="text"
+            [(ngModel)]="selectedVehicle.brand"
+            name="brand"
+            class="w-full px-3 py-2 border rounded"
+            required
+          />
+          <div
+            *ngIf="vehicleForm.submitted && !selectedVehicle.brand"
+            class="text-red-500 text-sm"
+          >
+            Marca es requerida.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Modelo</label>
+          <input
+            type="text"
+            [(ngModel)]="selectedVehicle.model"
+            name="model"
+            class="w-full px-3 py-2 border rounded"
+            required
+          />
+          <div
+            *ngIf="vehicleForm.submitted && !selectedVehicle.model"
+            class="text-red-500 text-sm"
+          >
+            Modelo es requerido.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Matrícula</label>
+          <input
+            type="text"
+            [(ngModel)]="selectedVehicle.licensePlate"
+            name="licensePlate"
+            class="w-full px-3 py-2 border rounded"
+            required
+          />
+          <div
+            *ngIf="vehicleForm.submitted && !selectedVehicle.licensePlate"
+            class="text-red-500 text-sm"
+          >
+            Matrícula es requerida.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Tipo</label>
+          <select
+            [(ngModel)]="selectedVehicle.type"
+            name="type"
+            class="w-full px-3 py-2 border rounded"
+            required
+          >
+            <option value="Sedan">Sedan</option>
+            <option value="SUV">SUV</option>
+            <option value="Camioneta">Camioneta</option>
+            <option value="Deportivo">Deportivo</option>
+          </select>
+          <div
+            *ngIf="vehicleForm.submitted && !selectedVehicle.type"
+            class="text-red-500 text-sm"
+          >
+            Tipo es requerido.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Estado</label>
+          <select
+            [(ngModel)]="selectedVehicle.status"
+            name="status"
+            class="w-full px-3 py-2 border rounded"
+            required
+          >
+            <option value="Disponible">Disponible</option>
+            <option value="Mantenimiento">Mantenimiento</option>
+            <option value="Alquilado">Alquilado</option>
+          </select>
+          <div
+            *ngIf="vehicleForm.submitted && !selectedVehicle.status"
+            class="text-red-500 text-sm"
+          >
+            Estado es requerido.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Tarifa Diaria</label>
+          <input
+            type="number"
+            [(ngModel)]="selectedVehicle.dailyRate"
+            name="dailyRate"
+            class="w-full px-3 py-2 border rounded"
+            required
+          />
+          <div
+            *ngIf="vehicleForm.submitted && !selectedVehicle.dailyRate"
+            class="text-red-500 text-sm"
+          >
+            Tarifa Diaria es requerida.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Fecha de Adquisición</label>
+          <input
+            type="date"
+            [(ngModel)]="selectedVehicle.acquisitionDate"
+            name="acquisitionDate"
+            class="w-full px-3 py-2 border rounded"
+            required
+            [max]="today"
+          />
+          <div
+            *ngIf="vehicleForm.submitted && !selectedVehicle.acquisitionDate"
+            class="text-red-500 text-sm"
+          >
+            Fecha de Adquisición es requerida.
+          </div>
+          <div
+            *ngIf="vehicleForm.submitted && isFutureDate()"
+            class="text-red-500 text-sm"
+          >
+            La fecha no puede ser futura.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Kilometraje</label>
+          <input
+            type="number"
+            [(ngModel)]="selectedVehicle.mileage"
+            name="mileage"
+            class="w-full px-3 py-2 border rounded"
+            required
+          />
+          <div
+            *ngIf="vehicleForm.submitted && !selectedVehicle.mileage"
+            class="text-red-500 text-sm"
+          >
+            Kilometraje es requerido.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Ubicación</label>
+          <input
+            type="text"
+            [(ngModel)]="selectedVehicle.location"
+            name="location"
+            class="w-full px-3 py-2 border rounded"
+            required
+          />
+          <div
+            *ngIf="vehicleForm.submitted && !selectedVehicle.location"
+            class="text-red-500 text-sm"
+          >
+            Ubicación es requerida.
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button
+            type="button"
+            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2 transition duration-300"
+            (click)="closeModal()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+          >
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirm Delete Modal -->
+  <div
+    *ngIf="isDeleteModalOpen"
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center"
+  >
+    <div class="bg-white p-6 rounded shadow-lg w-1/3">
+      <h2 class="text-xl font-bold mb-4 flex items-center">
+        <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i> Confirmar
+        Eliminación
+      </h2>
+      <p>¿Estás seguro de que deseas eliminar este vehículo?</p>
+      <div class="flex justify-end mt-4">
+        <button
+          type="button"
+          class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2 transition duration-300"
+          (click)="closeDeleteModal()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300 flex items-center"
+          (click)="confirmDelete()"
+        >
+          <i class="fas fa-trash mr-1"></i> Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
